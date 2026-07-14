@@ -1,0 +1,34 @@
+{
+  "name": "kamiyama-monozukuri-archive",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:assets": "node scripts/build-assets.mjs",
+    "build": "npm run generate && npm run build:assets",
+    "dev": "npm run build && tsx src/server.ts",
+    "deploy": "npx vercel --prod",
+    "generate": "prisma generate",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "typecheck": "npm run generate && tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "latest",
+    "@prisma/client": "latest",
+    "@supabase/supabase-js": "latest",
+    "hono": "latest",
+    "pg": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@hono/node-server": "latest",
+    "@types/node": "latest",
+    "@types/pg": "latest",
+    "prisma": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}

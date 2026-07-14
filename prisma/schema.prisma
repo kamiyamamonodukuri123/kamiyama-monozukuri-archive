@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  runtime  = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  TEACHER
+  STAFF
+  ALUMNI
+  OTHER
+  ADMIN
+}
+
+enum WorkStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Visibility {
+  PUBLIC
+  SCHOOL
+  PRIVATE
+}
+
+enum EventType {
+  EXHIBITION
+  RECRUITMENT
+  CONTEST
+  OTHER
+}
+
+enum NotificationType {
+  SYSTEM
+  LIKE
+  COMMENT
+  EVENT
+}
+
+model User {
+  /// Supabase Auth user ID (auth.users.id)
+  id          String   @id @db.Uuid
+  email       String   @unique
+  username    String   @unique
+  lastName    String
+  firstName   String
+  role        UserRole @default(STUDENT)
+  affiliation String?
+  bio         String?
+  avatarUrl   String?
+  skills      String[] @default([])
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+
+  works         Work[]
+  events        Event[]
+  likes         Like[]
+  bookmarks     Bookmark[]
+  comments      Comment[]
+  notifications Notification[]
+}
+
+model Work {
+  id            String     @id @default(uuid()) @db.Uuid
+  title         String
+  catchcopy     String?
+  description   String
+  background    String?
+  category      String?
+  dateStart     DateTime?   @db.Date
+  dateEnd       DateTime?   @db.Date
+  members       String
+  className     String
+  tech          String?
+  accessLink    String?
+  docsLink      String?
+  visibility    Visibility @default(SCHOOL)
+  status        WorkStatus @default(DRAFT)
+  allowComments Boolean    @default(true)
+  viewCount     Int        @default(0)
+  createdAt     DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime   @updatedAt @db.Timestamptz(3)
+  publishedAt   DateTime?  @db.Timestamptz(3)
+
+  authorId String @db.Uuid
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  images    WorkImage[]
+  workTags  WorkTag[]
+  likes     Like[]
+  bookmarks Bookmark[]
+  comments  Comment[]
+
+  @@index([authorId])
+  @@index([status, visibility, createdAt])
+  @@index([category])
+}
+
+model WorkImage {
+  id          String @id @default(uuid()) @db.Uuid
+  imageUrl    String
+  storagePath String
+  sortOrder   Int    @default(0)
+
+  workId String @db.Uuid
+  work   Work   @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@index([workId, sortOrder])
+}
+
+model Tag {
+  id       String    @id @default(uuid()) @db.Uuid
+  name     String    @unique
+  workTags WorkTag[]
+}
+
+model WorkTag {
+  workId String @db.Uuid
+  tagId  String @db.Uuid
+
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([workId, tagId])
+  @@index([tagId])
+}
+
+model Like {
+  userId    String   @db.Uuid
+  workId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@id([userId, workId])
+  @@index([workId, createdAt])
+}
+
+model Bookmark {
+  userId    String   @db.Uuid
+  workId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@id([userId, workId])
+  @@index([workId])
+}
+
+model Comment {
+  id        String   @id @default(uuid()) @db.Uuid
+  body      String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  userId String @db.Uuid
+  workId String @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@index([workId, createdAt])
+}
+
+model Event {
+  id          String    @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  type        EventType @default(OTHER)
+  place       String?
+  startAt     DateTime? @db.Date
+  endAt       DateTime? @db.Date
+  imageUrl    String?
+  storagePath String?
+  isPublished Boolean   @default(false)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
+
+  creatorId String? @db.Uuid
+  creator   User?   @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+
+  @@index([isPublished, startAt, endAt])
+  @@index([creatorId])
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  type      NotificationType @default(SYSTEM)
+  title     String
+  body      String?
+  href      String?
+  readAt    DateTime?        @db.Timestamptz(3)
+  createdAt DateTime         @default(now()) @db.Timestamptz(3)
+
+  recipientId String @db.Uuid
+  recipient   User   @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, readAt, createdAt])
+}

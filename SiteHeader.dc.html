@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<script src="./api.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<style>
+a { color: #1e6b3d; }
+a:hover { color: #14522d; }
+.notification-menu__panel {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
+}
+.notification-menu:hover .notification-menu__panel,
+.notification-menu:focus-within .notification-menu__panel {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.notification-menu:hover .notification-menu__button,
+.notification-menu:focus-within .notification-menu__button {
+  background: #f0f1ec !important;
+}
+@media (max-width: 900px) {
+  [data-mq="nav-desktop"] { display: none !important; }
+  [data-mq="nav-burger"] { display: inline-flex !important; }
+  [data-mq="brand-text"] { font-size: 15px !important; }
+}
+@media (max-width: 640px) {
+  [data-mq="brand-text"] { display: none !important; }
+  [data-mq="login-action"] { font-size: 13px !important; padding: 9px 14px !important; }
+}
+</style>
+</helmet>
+<div aria-hidden="true" style="height: 64px;"></div>
+<header data-screen-label="共通ヘッダー" style="position: fixed; top: 0; left: 0; right: 0; width: 100%; box-sizing: border-box; z-index: 100; background: #ffffff; border-bottom: 1px solid #e6e6df; font-family: 'Noto Sans JP', sans-serif;">
+  <div style="display: flex; align-items: center; gap: 8px; height: 64px; padding: 0 24px; max-width: 1440px; margin: 0 auto;">
+    <a href="Home.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #1f241f; margin-right: auto;">
+      <img src="assets/logo.svg" alt="ロゴ" style="width: 34px; height: 34px; display: block;">
+      <span data-mq="brand-text" style="font-weight: 900; font-size: 18px; letter-spacing: 0.02em; white-space: nowrap;">神山ものづくり保管計画</span>
+    </a>
+    <nav data-mq="nav-desktop" style="display: flex; align-items: center; gap: 4px;">
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="4">
+        <a href="{{ item.href }}" style="text-decoration: none; font-size: 15px; padding: 20px 14px 18px; font-weight: {{ item.weight }}; color: {{ item.color }}; border-bottom: 2px solid {{ item.underline }};">{{ item.label }}</a>
+      </sc-for>
+    </nav>
+    <div style="display: flex; align-items: center; gap: 6px; margin-left: 8px;">
+      <div class="notification-menu" style="position: relative; display: inline-flex;">
+        <button class="notification-menu__button" aria-label="通知を確認" aria-haspopup="true" style="width: 40px; height: 40px; border: none; background: transparent; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background 160ms ease;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3a3f39" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 6-2.5 7-2.5 7h17S18 15 18 9"></path><path d="M10 20a2.2 2.2 0 0 0 4 0"></path></svg>
+        </button>
+        <div class="notification-menu__panel" role="region" aria-label="通知一覧" style="position: absolute; top: 40px; right: 0; width: min(340px, calc(100vw - 32px)); background: #ffffff; border: 1px solid #e0e2da; border-radius: 12px; box-shadow: 0 14px 36px rgba(31, 36, 31, 0.14); overflow: hidden; z-index: 120;">
+          <div style="padding: 16px 18px 13px; border-bottom: 1px solid #eceee8;">
+            <p style="margin: 0; color: #1f241f; font-size: 15px; font-weight: 700;">通知</p>
+          </div>
+          <sc-if value="{{ hasNotifications }}" hint-placeholder-val="{{ false }}">
+            <div style="max-height: 320px; overflow-y: auto;">
+              <sc-for list="{{ notifications }}" as="notification" hint-placeholder-count="2">
+                <a href="{{ notification.href }}" style="display: block; padding: 14px 18px; border-bottom: 1px solid #f0f1ec; color: #1f241f; text-decoration: none; background: {{ notification.background }};" style-hover="background: #f6f7f3;">
+                  <span style="display: block; font-size: 13.5px; font-weight: {{ notification.weight }}; line-height: 1.6;">{{ notification.title }}</span>
+                  <span style="display: block; margin-top: 3px; color: #72776e; font-size: 12px; line-height: 1.5;">{{ notification.time }}</span>
+                </a>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ hasNoNotifications }}" hint-placeholder-val="{{ true }}">
+            <div style="padding: 30px 20px 32px; text-align: center;">
+              <svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a9afa5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 6-2.5 7-2.5 7h17S18 15 18 9"></path><path d="M10 20a2.2 2.2 0 0 0 4 0"></path></svg>
+              <p style="margin: 10px 0 0; color: #5f655d; font-size: 13px;">新しい通知はありません</p>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+      <sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ false }}">
+        <a href="Profile.dc.html" title="{{ userLabel }}" style="display: inline-flex;">
+          <img src="{{ avatarSrc }}" alt="プロフィール" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #dfe9d8; display: block;">
+        </a>
+      </sc-if>
+      <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ true }}">
+        <a href="Signup.dc.html" data-mq="login-action" style="display: inline-flex; align-items: center; text-decoration: none; background: #1e6b3d; color: #ffffff; font-size: 14px; font-weight: 700; padding: 9px 18px; border-radius: 6px; white-space: nowrap;" style-hover="background: #17552f;">ログイン / 登録</a>
+      </sc-if>
+      <button data-mq="nav-burger" onClick="{{ toggleMenu }}" aria-label="メニュー" style="display: none; width: 40px; height: 40px; border: none; background: transparent; border-radius: 8px; cursor: pointer; align-items: center; justify-content: center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f241f" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
+  </div>
+  <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="border-top: 1px solid #e6e6df; background: #ffffff; padding: 8px 16px 16px; display: flex; flex-direction: column;">
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="4">
+        <a href="{{ item.href }}" style="text-decoration: none; font-size: 16px; padding: 14px 8px; font-weight: {{ item.weight }}; color: {{ item.color }}; border-bottom: 1px solid #f0f1ec;">{{ item.label }}</a>
+      </sc-for>
+      <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ true }}">
+        <a href="Signup.dc.html" style="margin-top: 14px; text-align: center; text-decoration: none; background: #1e6b3d; color: #ffffff; font-size: 15px; font-weight: 700; padding: 12px; border-radius: 8px;">ログイン / 登録</a>
+      </sc-if>
+      <sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ logout }}" style="margin-top: 14px; background: #ffffff; border: 1px solid #dcdcd4; color: #3a3f39; font-size: 15px; font-weight: 500; padding: 12px; border-radius: 8px; cursor: pointer;">ログアウト</button>
+      </sc-if>
+    </div>
+  </sc-if>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: &quot;1280px&quot;, &quot;height&quot;: &quot;80px&quot;}, &quot;active&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;home&quot;, &quot;explore&quot;, &quot;events&quot;, &quot;post&quot;, &quot;&quot;], &quot;default&quot;: &quot;home&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;ナビゲーション&quot;}}">
+class Component extends DCLogic {
+  state = {
+    menuOpen: false,
+    user: null,
+    authReady: false,
+    notifications: []
+  };
+
+  componentDidMount() {
+    window.kmApi.session()
+      .then(result => {
+        this.setState({ user: result.user, authReady: true });
+        if (result.user) return window.kmApi.getNotifications();
+        return null;
+      })
+      .then(result => {
+        if (result) this.setState({ notifications: result.notifications || [] });
+      })
+      .catch(() => this.setState({ user: null, authReady: true, notifications: [] }));
+  }
+
+  renderVals() {
+    const active = this.props.active ?? '';
+    const user = this.state.user;
+    const notifications = this.state.notifications.slice(0, 8).map(item => ({
+      title: String(item.title || 'お知らせ'),
+      time: item.createdAt ? new Date(item.createdAt).toLocaleDateString('ja-JP') : '',
+      href: String(item.href || '#'),
+      weight: item.readAt ? 500 : 700,
+      background: item.readAt ? '#ffffff' : '#f3f7f0'
+    }));
+    const mk = (key, label, href) => ({
+      label, href,
+      weight: active === key ? 700 : 500,
+      color: active === key ? '#1e6b3d' : '#3a3f39',
+      underline: active === key ? '#1e6b3d' : 'transparent'
+    });
+    return {
+      navItems: [
+        mk('home', 'ホーム', 'Home.dc.html'),
+        mk('explore', '作品を探す', 'Explore.dc.html'),
+        mk('events', 'イベント', 'Events.dc.html'),
+        mk('post', '作品を投稿', 'PostWork.dc.html')
+      ],
+      isLoggedIn: this.state.authReady && !!user,
+      isLoggedOut: this.state.authReady && !user,
+      userLabel: user ? (user.lastName + ' ' + user.firstName) : '',
+      avatarSrc: (user && user.avatar) ? user.avatar : 'assets/avatar-default.svg',
+      notifications,
+      hasNotifications: notifications.length > 0,
+      hasNoNotifications: notifications.length === 0,
+      menuOpen: this.state.menuOpen,
+      toggleMenu: () => this.setState(s => ({ menuOpen: !s.menuOpen })),
+      logout: async () => {
+        try { await window.kmApi.logout(); } catch (e) {}
+        window.location.href = 'Home.dc.html';
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

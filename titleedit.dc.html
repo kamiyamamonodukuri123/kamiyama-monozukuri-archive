@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<script src="./api.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<style>
+html, body { margin: 0; padding: 0; background: #fafaf7; }
+body { font-family: 'Noto Sans JP', sans-serif; color: #1f241f; }
+a { color: #1e6b3d; }
+a:hover { color: #14522d; }
+@media (max-width: 1000px) {
+  [data-mq="admin-grid"] { grid-template-columns: 1fr !important; }
+  [data-mq="form-side"] { position: static !important; }
+}
+@media (max-width: 640px) {
+  [data-mq="date-row"] { grid-template-columns: 1fr !important; }
+}
+</style>
+</helmet>
+<dc-import name="SiteHeader" active="" hint-size="100%,64px"></dc-import>
+
+<sc-if value="{{ locked }}" hint-placeholder-val="{{ true }}">
+  <main data-screen-label="管理者認証" style="max-width: 1360px; margin: 0 auto; padding: 80px 24px 120px; display: flex; justify-content: center;">
+    <section style="width: 100%; max-width: 420px; background: #ffffff; border: 1px solid #e6e6df; border-radius: 12px; padding: 36px 32px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: #eef4ea; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1e6b3d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+      </div>
+      <h1 style="font-size: 20px; font-weight: 900; margin: 0;">イベント管理</h1>
+      <p style="font-size: 13px; color: #6b7069; line-height: 1.8; margin: 0 0 16px;">{{ accessMessage }}</p>
+      <input type="password" value="{{ passkey }}" onChange="{{ setPasskey }}" onKeyDown="{{ passkeyKeyDown }}" placeholder="パスキー" autocomplete="current-password" style="width: 100%; box-sizing: border-box; border: 1px solid #cfd5c8; border-radius: 8px; padding: 12px 14px; font-family: inherit; font-size: 14px; outline-color: #1e6b3d;">
+      <button onClick="{{ unlock }}" style="width: 100%; box-sizing: border-box; border: none; background: #1e6b3d; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 700; padding: 12px; border-radius: 8px; cursor: pointer;">{{ unlockLabel }}</button>
+      <a href="Home.dc.html" style="margin-top: 12px; font-size: 13px; text-decoration: none; color: #5a6055;">‹ ホームに戻る</a>
+    </section>
+  </main>
+</sc-if>
+
+<sc-if value="{{ unlocked }}" hint-placeholder-val="{{ false }}">
+<main data-screen-label="イベント管理（管理者）" style="max-width: 1360px; margin: 0 auto; padding: 0 24px 64px;">
+
+  <section style="display: flex; align-items: center; gap: 14px; padding: 44px 4px 28px; flex-wrap: wrap;">
+    <h1 style="font-size: 30px; font-weight: 900; letter-spacing: 0.02em; margin: 0;">イベント管理</h1>
+    <span style="font-size: 12px; font-weight: 700; color: #8a5a1e; background: #f6ead6; border: 1px solid #e8d5b4; border-radius: 999px; padding: 5px 14px;">管理者専用</span>
+    <p style="width: 100%; font-size: 14.5px; line-height: 1.9; color: #3a3f39; margin: 4px 0 0;">イベントの新規掲載と、掲載済みイベントの更新・削除を行えます。</p>
+  </section>
+
+  <div data-mq="admin-grid" style="display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 24px; align-items: start;">
+
+    <section style="background: #ffffff; border: 1px solid #e6e6df; border-radius: 12px; padding: 24px; min-height: 420px; display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px;">
+        <h2 style="font-size: 18px; font-weight: 700; margin: 0;">掲載中のイベント</h2>
+        <span style="font-size: 13px; color: #6b7069;">{{ countLabel }}</span>
+      </div>
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ true }}">
+        <div style="flex: 1; border: 1.5px dashed #d5d8cd; border-radius: 10px; padding: 56px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#a9c79a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+          <p style="margin: 0; font-size: 15px; font-weight: 700; color: #3a3f39;">掲載中のイベントはありません</p>
+          <p style="margin: 0; font-size: 13px; color: #6b7069; line-height: 1.8;">右のフォームから最初のイベントを掲載しましょう。</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasEvents }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <sc-for list="{{ events }}" as="ev" hint-placeholder-count="2">
+            <div style="border: 1px solid {{ ev.border }}; background: {{ ev.bg }}; border-radius: 10px; padding: 16px 18px; display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+              <sc-if value="{{ ev.hasThumb }}" hint-placeholder-val="{{ false }}">
+                <div role="img" aria-label="サムネイル" style="width: 96px; height: 68px; border-radius: 8px; border: 1px solid #e6e6df; background-size: cover; background-position: center; background-image: {{ ev.thumbUrl }};"></div>
+              </sc-if>
+              <sc-if value="{{ ev.noThumb }}" hint-placeholder-val="{{ true }}">
+                <div style="width: 96px; height: 68px; border-radius: 8px; background: repeating-linear-gradient(45deg, #eef0e9, #eef0e9 8px, #e4e7de 8px, #e4e7de 16px); display: flex; align-items: center; justify-content: center;">
+                  <span style="font-family: ui-monospace, monospace; font-size: 10px; color: #8a9084;">no image</span>
+                </div>
+              </sc-if>
+              <div style="flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <span style="font-size: 11.5px; font-weight: 700; color: {{ ev.statusColor }}; background: {{ ev.statusBg }}; border-radius: 999px; padding: 3px 12px;">{{ ev.statusLabel }}</span>
+                  <span style="font-size: 12px; color: #6b7069;">{{ ev.typeLabel }}</span>
+                </div>
+                <p style="margin: 0; font-size: 15px; font-weight: 700; color: #1f241f;">{{ ev.title }}</p>
+                <p style="margin: 0; font-size: 12.5px; color: #6b7069;">{{ ev.period }}　{{ ev.place }}</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button onClick="{{ ev.edit }}" style="border: 1px solid #cfd5c8; background: #ffffff; color: #1e6b3d; font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 7px 16px; border-radius: 8px; cursor: pointer;" style-hover="background: #eef4ea; border-color: #1e6b3d;">編集</button>
+                <button onClick="{{ ev.remove }}" style="border: 1px solid #e3d2d2; background: #ffffff; color: #a33b3b; font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 7px 16px; border-radius: 8px; cursor: pointer;" style-hover="background: #f8eeee; border-color: #a33b3b;">削除</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </section>
+
+    <aside data-mq="form-side" style="position: sticky; top: 88px;">
+      <section style="background: #ffffff; border: 1px solid #e6e6df; border-radius: 12px; padding: 24px;">
+        <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px;">{{ formTitle }}</h2>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+
+          <label style="display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 13px; font-weight: 700; color: #3a3f39;">イベント名 <span style="color: #a33b3b; font-weight: 500; font-size: 11.5px;">必須</span></span>
+            <input value="{{ fTitle }}" onChange="{{ setTitle }}" placeholder="例：卒業制作展 2026" style="border: 1px solid #cfd5c8; border-radius: 8px; padding: 11px 13px; font-family: inherit; font-size: 14px; color: #1f241f; outline-color: #1e6b3d;">
+          </label>
+
+          <label style="display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 13px; font-weight: 700; color: #3a3f39;">種別</span>
+            <select value="{{ fType }}" onChange="{{ setType }}" style="border: 1px solid #cfd5c8; border-radius: 8px; padding: 11px 13px; font-family: inherit; font-size: 14px; color: #1f241f; background: #ffffff; cursor: pointer;">
+              <option value="exhibit">展示会</option>
+              <option value="call">作品募集</option>
+              <option value="contest">コンテスト</option>
+              <option value="other">その他</option>
+            </select>
+          </label>
+
+          <div data-mq="date-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <label style="display: flex; flex-direction: column; gap: 6px;">
+              <span style="font-size: 13px; font-weight: 700; color: #3a3f39;">開始日</span>
+              <input type="date" value="{{ fStart }}" onChange="{{ setStart }}" style="border: 1px solid #cfd5c8; border-radius: 8px; padding: 10px 13px; font-family: inherit; font-size: 14px; color: #1f241f;">
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 6px;">
+              <span style="font-size: 13px; font-weight: 700; color: #3a3f39;">終了日</span>
+              <input type="date" value="{{ fEnd }}" onChange="{{ setEnd }}" style="border: 1px solid #cfd5c8; border-radius: 8px; padding: 10px 13px; font-family: inherit; font-size: 14px; color: #1f241f;">
+            </label>
+          </div>
+
+          <label style="display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 13px; font-weight: 700; color: #3a3f39;">場所</span>
+            <input value="{{ fPlace }}" onChange="{{ setPlace }}" placeholder="例：本館1F ギャラリー / オンライン" style="border: 1px solid #cfd5c8; border-radius: 8px; padding: 11px 13px; font-family: inherit; font-size: 14px; color: #1f241f;">
+          </label>
+
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 13px; font-weight: 700; color: #3a3f39;">サムネイル</span>
+            <sc-if value="{{ fNoThumb }}" hint-placeholder-val="{{ true }}">
+              <label style="border: 1.5px dashed #cfd5c8; border-radius: 8px; padding: 22px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; text-align: center;" style-hover="background: #f4f9f1; border-color: #1e6b3d;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a9c79a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="15" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M3 17 L9 12 L14 16 L17 13 L21 17"></path></svg>
+                <span style="font-size: 12.5px; color: #6b7069;">クリックして画像を選択</span>
+                <input type="file" accept="image/*" onChange="{{ setThumb }}" style="display: none;">
+              </label>
+            </sc-if>
+            <sc-if value="{{ fHasThumb }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <div role="img" aria-label="サムネイルプレビュー" style="width: 160px; height: 100px; border-radius: 8px; border: 1px solid #e6e6df; background-size: cover; background-position: center; background-image: {{ fThumbUrl }};"></div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <label style="border: 1px solid #cfd5c8; background: #ffffff; color: #1e6b3d; font-size: 12.5px; font-weight: 700; padding: 7px 14px; border-radius: 8px; cursor: pointer; text-align: center;" style-hover="background: #eef4ea;">
+                    変更<input type="file" accept="image/*" onChange="{{ setThumb }}" style="display: none;">
+                  </label>
+                  <button onClick="{{ clearThumb }}" style="border: 1px solid #e3d2d2; background: #ffffff; color: #a33b3b; font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 7px 14px; border-radius: 8px; cursor: pointer;" style-hover="background: #f8eeee;">削除</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <label style="display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 13px; font-weight: 700; color: #3a3f39;">説明</span>
+            <textarea value="{{ fDesc }}" onChange="{{ setDesc }}" rows="4" placeholder="イベントの概要、対象、応募方法などを記入してください。" style="border: 1px solid #cfd5c8; border-radius: 8px; padding: 11px 13px; font-family: inherit; font-size: 14px; color: #1f241f; resize: vertical; line-height: 1.7;"></textarea>
+          </label>
+
+          <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 0; font-size: 12.5px; color: #a33b3b;">{{ errorText }}</p>
+          </sc-if>
+
+          <div style="display: flex; gap: 10px; margin-top: 4px;">
+            <button onClick="{{ save }}" style="flex: 1; border: none; background: #1e6b3d; color: #ffffff; font-family: inherit; font-size: 14.5px; font-weight: 700; padding: 12px; border-radius: 8px; cursor: pointer;" style-hover="background: #17552f;">{{ saveLabel }}</button>
+            <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ cancelEdit }}" style="border: 1px solid #cfd5c8; background: #ffffff; color: #3a3f39; font-family: inherit; font-size: 14px; font-weight: 500; padding: 12px 20px; border-radius: 8px; cursor: pointer;" style-hover="background: #f0f1ec;">キャンセル</button>
+            </sc-if>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+  </div>
+</main>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    events: [],
+    editingId: null,
+    error: '',
+    fTitle: '', fType: 'exhibit', fStart: '', fEnd: '', fPlace: '', fDesc: '', fThumb: '',
+    authed: false,
+    authReady: false,
+    accessMessage: '権限を確認しています…',
+    passkey: '',
+    unlocking: false
+  };
+
+  componentDidMount() {
+    window.kmApi.eventAccess()
+      .then(result => this.loadEvents(!!result.ok))
+      .catch(() => this.loadEvents(false));
+  }
+
+  loadEvents(passkeyAccess) {
+    const typeMap = { EXHIBITION: 'exhibit', RECRUITMENT: 'call', CONTEST: 'contest', OTHER: 'other' };
+    window.kmApi.getEvents(true)
+      .then(result => {
+        const events = (result.events || []).map(ev => ({
+          id: ev.id, title: ev.title, type: typeMap[ev.type] || 'other',
+          start: ev.startAt ? ev.startAt.slice(0, 10) : '', end: ev.endAt ? ev.endAt.slice(0, 10) : '',
+          place: ev.place || '', desc: ev.description || '', thumb: ev.imageUrl || ''
+        }));
+        const authed = !!passkeyAccess || !!result.canManage;
+        this.setState({
+          events, authed, authReady: true,
+          accessMessage: authed ? '' : 'イベント管理用のパスキーを入力してください。'
+        });
+      })
+      .catch(error => this.setState(passkeyAccess
+        ? { authReady: true, authed: true, error: error.message || 'イベントを読み込めませんでした。' }
+        : { authReady: true, authed: false, accessMessage: error.message || '権限を確認できませんでした。' }));
+  }
+
+  statusOf(ev) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (ev.end && ev.end < today) return 'past';
+    if (ev.start && ev.start > today) return 'upcoming';
+    return 'now';
+  }
+
+  clearForm() {
+    this.setState({ editingId: null, error: '', fTitle: '', fType: 'exhibit', fStart: '', fEnd: '', fPlace: '', fDesc: '', fThumb: '' });
+  }
+
+  readThumb(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 640;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        this.setState({ fThumb: canvas.toDataURL('image/jpeg', 0.82), error: '' });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  renderVals() {
+    const s = this.state;
+    const typeLabels = { exhibit: '展示会', call: '作品募集', contest: 'コンテスト', other: 'その他' };
+    const statusDefs = {
+      now: ['開催中', '#1e6b3d', '#e4efdd'],
+      upcoming: ['開催予定', '#8a5a1e', '#f6ead6'],
+      past: ['終了', '#6b7069', '#eeeee8']
+    };
+    const bind = (key) => (e) => this.setState({ [key]: e.target.value, error: '' });
+    const fmt = (d) => d ? d.replace(/-/g, '/') : '未定';
+
+    return {
+      locked: s.authReady && !s.authed,
+      unlocked: s.authReady && s.authed,
+      accessMessage: s.accessMessage,
+      passkey: s.passkey,
+      setPasskey: e => this.setState({ passkey: e.target.value, accessMessage: 'イベント管理用のパスキーを入力してください。' }),
+      unlockLabel: s.unlocking ? '確認中…' : '管理画面に入る',
+      passkeyKeyDown: e => { if (e.key === 'Enter') { e.preventDefault(); this.unlock(); } },
+      unlock: () => this.unlock(),
+      countLabel: s.events.length + '件',
+      isEmpty: s.events.length === 0,
+      hasEvents: s.events.length > 0,
+      events: s.events.map((ev) => {
+        const st = this.statusOf(ev);
+        const [statusLabel, statusColor, statusBg] = statusDefs[st];
+        const editing = s.editingId === ev.id;
+        return {
+          title: ev.title,
+          thumbUrl: ev.thumb ? 'url("' + ev.thumb + '")' : 'none',
+          hasThumb: !!ev.thumb,
+          noThumb: !ev.thumb,
+          typeLabel: typeLabels[ev.type] || 'その他',
+          period: fmt(ev.start) + ' 〜 ' + fmt(ev.end),
+          place: ev.place || '',
+          statusLabel, statusColor, statusBg,
+          border: editing ? '#1e6b3d' : '#e6e6df',
+          bg: editing ? '#f4f9f1' : '#ffffff',
+          edit: () => this.setState({
+            editingId: ev.id, error: '',
+            fTitle: ev.title, fType: ev.type, fStart: ev.start, fEnd: ev.end,
+            fPlace: ev.place, fDesc: ev.desc, fThumb: ev.thumb || ''
+          }),
+          remove: async () => {
+            if (!window.confirm('「' + ev.title + '」を削除しますか？')) return;
+            try {
+              await window.kmApi.deleteEvent(ev.id);
+              this.setState({ events: this.state.events.filter(x => x.id !== ev.id) });
+              if (s.editingId === ev.id) this.clearForm();
+            } catch (error) { this.setState({ error: error.message || '削除に失敗しました。' }); }
+          }
+        };
+      }),
+      formTitle: s.editingId ? 'イベントを編集' : 'イベントを掲載',
+      saveLabel: s.editingId ? '更新する' : '掲載する',
+      isEditing: !!s.editingId,
+      cancelEdit: () => this.clearForm(),
+      hasError: !!s.error,
+      errorText: s.error,
+      fTitle: s.fTitle, setTitle: bind('fTitle'),
+      fType: s.fType, setType: bind('fType'),
+      fStart: s.fStart, setStart: bind('fStart'),
+      fEnd: s.fEnd, setEnd: bind('fEnd'),
+      fPlace: s.fPlace, setPlace: bind('fPlace'),
+      fDesc: s.fDesc, setDesc: bind('fDesc'),
+      fThumbUrl: s.fThumb ? 'url("' + s.fThumb + '")' : 'none',
+      fHasThumb: !!s.fThumb,
+      fNoThumb: !s.fThumb,
+      setThumb: (e) => this.readThumb(e),
+      clearThumb: () => this.setState({ fThumb: '' }),
+      save: async () => {
+        if (!s.fTitle.trim()) { this.setState({ error: 'イベント名を入力してください。' }); return; }
+        if (s.fStart && s.fEnd && s.fEnd < s.fStart) { this.setState({ error: '終了日は開始日以降にしてください。' }); return; }
+        const data = { title: s.fTitle.trim(), type: s.fType, start: s.fStart, end: s.fEnd, place: s.fPlace.trim(), description: s.fDesc.trim(), image: s.fThumb, isPublished: true };
+        try {
+          const result = s.editingId ? await window.kmApi.updateEvent(s.editingId, data) : await window.kmApi.createEvent(data);
+          const ev = result.event;
+          const normalized = { id: ev.id, title: ev.title, type: s.fType, start: s.fStart, end: s.fEnd, place: ev.place || '', desc: ev.description || '', thumb: ev.imageUrl || '' };
+          this.setState({ events: s.editingId ? s.events.map(item => item.id === s.editingId ? normalized : item) : [normalized, ...s.events] });
+          this.clearForm();
+        } catch (error) { this.setState({ error: error.message || '保存に失敗しました。' }); }
+      }
+    };
+  }
+
+  async unlock() {
+    const passkey = this.state.passkey;
+    if (!passkey || this.state.unlocking) return;
+    this.setState({ unlocking: true, accessMessage: 'パスキーを確認しています…' });
+    try {
+      await window.kmApi.unlockEvents(passkey);
+      this.setState({ passkey: '', unlocking: false, authReady: false });
+      this.loadEvents(true);
+    } catch (error) {
+      this.setState({ unlocking: false, accessMessage: error.message || 'パスキーが正しくありません。' });
+    }
+  }
+}
+</script>
+</body>
+</html>
