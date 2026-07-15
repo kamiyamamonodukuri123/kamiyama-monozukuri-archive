@@ -56,6 +56,7 @@ authRoutes.post("/register", async (c) => {
     email: input.email.toLowerCase(),
     password: input.password,
     options: {
+      emailRedirectTo: new URL("/Home.dc.html", c.req.url).toString(),
       data: {
         username: input.username,
         last_name: input.lastName,

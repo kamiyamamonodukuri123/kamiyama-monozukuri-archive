@@ -1,4 +1,9 @@
 (function () {
+  const authFragment = new URLSearchParams(window.location.hash.slice(1));
+  if (authFragment.has('access_token') || authFragment.has('refresh_token')) {
+    window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+  }
+
   const roleLabels = {
     STUDENT: '学生',
     TEACHER: '教員',
