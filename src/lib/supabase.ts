@@ -1,9 +1,9 @@
 import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
 import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
-import type { AppBindings } from "./app";
-import { ApiError, requireConfigured } from "./app";
-import type { AppEnv } from "./env";
+import type { AppBindings } from "./app.js";
+import { ApiError, requireConfigured } from "./app.js";
+import type { AppEnv } from "./env.js";
 
 const ACCESS_COOKIE = "km_access_token";
 const REFRESH_COOKIE = "km_refresh_token";

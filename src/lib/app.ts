@@ -1,5 +1,5 @@
-import type { PrismaClient, User } from "../generated/prisma/client";
-import type { AppEnv } from "./env";
+import type { PrismaClient, User } from "../generated/prisma/client.js";
+import type { AppEnv } from "./env.js";
 
 export type AppBindings = {
   Bindings: AppEnv;

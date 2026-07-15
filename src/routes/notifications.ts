@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import type { AppBindings } from "../lib/app";
-import { requireUser } from "../lib/supabase";
+import type { AppBindings } from "../lib/app.js";
+import { requireUser } from "../lib/supabase.js";
 
 export const notificationRoutes = new Hono<AppBindings>();
 

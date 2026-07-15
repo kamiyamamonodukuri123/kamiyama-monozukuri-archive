@@ -1,13 +1,13 @@
 import { Hono } from "hono";
-import type { AppBindings } from "./lib/app";
-import { ApiError } from "./lib/app";
-import { createPrisma } from "./lib/prisma";
-import { requireSameOrigin } from "./lib/supabase";
-import { authRoutes } from "./routes/auth";
-import { eventRoutes } from "./routes/events";
-import { notificationRoutes } from "./routes/notifications";
-import { profileRoutes } from "./routes/profile";
-import { workRoutes } from "./routes/works";
+import type { AppBindings } from "./lib/app.js";
+import { ApiError } from "./lib/app.js";
+import { createPrisma } from "./lib/prisma.js";
+import { requireSameOrigin } from "./lib/supabase.js";
+import { authRoutes } from "./routes/auth.js";
+import { eventRoutes } from "./routes/events.js";
+import { notificationRoutes } from "./routes/notifications.js";
+import { profileRoutes } from "./routes/profile.js";
+import { workRoutes } from "./routes/works.js";
 
 const app = new Hono<AppBindings>();
 

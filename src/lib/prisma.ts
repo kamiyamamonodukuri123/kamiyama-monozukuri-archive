@@ -1,6 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../generated/prisma/client";
-import type { AppEnv } from "./env";
+import { PrismaClient } from "../generated/prisma/client.js";
+import type { AppEnv } from "./env.js";
 
 export function createPrisma(env: AppEnv): PrismaClient {
   const adapter = new PrismaPg({

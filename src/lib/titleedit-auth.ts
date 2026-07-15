@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
-import type { AppBindings } from "./app";
-import { requireConfigured } from "./app";
+import type { AppBindings } from "./app.js";
+import { requireConfigured } from "./app.js";
 
 const ACCESS_COOKIE = "km_titleedit_access";
 const TITLEEDIT_PASSKEY = "taitoruteirei02";

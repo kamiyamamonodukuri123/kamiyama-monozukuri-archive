@@ -1,15 +1,15 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import type { UserRole } from "../generated/prisma/enums";
-import type { AppBindings } from "../lib/app";
-import { ApiError } from "../lib/app";
+import type { UserRole } from "../generated/prisma/enums.js";
+import type { AppBindings } from "../lib/app.js";
+import { ApiError } from "../lib/app.js";
 import {
   clearSessionCookies,
   createAdminClient,
   createAnonClient,
   currentUser,
   setSessionCookies,
-} from "../lib/supabase";
+} from "../lib/supabase.js";
 
 const roleMap: Record<string, UserRole> = {
   "学生": "STUDENT",

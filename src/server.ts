@@ -2,8 +2,8 @@ import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
-import app from "./index";
-import { loadAppEnv } from "./lib/env";
+import app from "./index.js";
+import { loadAppEnv } from "./lib/env.js";
 
 const local = new Hono();
 

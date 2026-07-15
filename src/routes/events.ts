@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import type { EventType } from "../generated/prisma/enums";
-import type { AppBindings } from "../lib/app";
-import { ApiError } from "../lib/app";
-import { createAdminClient, currentUser, requireUser } from "../lib/supabase";
-import { removeImages, uploadImage } from "../lib/storage";
-import { grantTitleEditAccess, hasTitleEditAccess, isTitleEditPasskey } from "../lib/titleedit-auth";
+import type { EventType } from "../generated/prisma/enums.js";
+import type { AppBindings } from "../lib/app.js";
+import { ApiError } from "../lib/app.js";
+import { createAdminClient, currentUser, requireUser } from "../lib/supabase.js";
+import { removeImages, uploadImage } from "../lib/storage.js";
+import { grantTitleEditAccess, hasTitleEditAccess, isTitleEditPasskey } from "../lib/titleedit-auth.js";
 
 const eventSchema = z.object({
   title: z.string().trim().min(1).max(120),

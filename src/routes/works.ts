@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import type { Prisma } from "../generated/prisma/client";
-import type { Visibility } from "../generated/prisma/enums";
-import type { AppBindings } from "../lib/app";
-import { ApiError } from "../lib/app";
-import { createAdminClient, currentUser, requireUser } from "../lib/supabase";
-import { removeImages, uploadImage, type StoredImage } from "../lib/storage";
+import type { Prisma } from "../generated/prisma/client.js";
+import type { Visibility } from "../generated/prisma/enums.js";
+import type { AppBindings } from "../lib/app.js";
+import { ApiError } from "../lib/app.js";
+import { createAdminClient, currentUser, requireUser } from "../lib/supabase.js";
+import { removeImages, uploadImage, type StoredImage } from "../lib/storage.js";
 
 const workSchema = z.object({
   id: z.string().uuid().optional(),
