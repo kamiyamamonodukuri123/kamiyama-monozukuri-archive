@@ -44,12 +44,27 @@ authRoutes.post("/register", async (c) => {
   if (!role) throw new ApiError(400, "ユーザー区分を選択してください。");
 
   const prisma = c.get("prisma");
-  const duplicate = await prisma.user.findFirst({
+  const admin = createAdminClient(c.env);
+  const duplicates = await prisma.user.findMany({
     where: { OR: [{ email: input.email.toLowerCase() }, { username: input.username }] },
-    select: { email: true, username: true },
+    select: { id: true, email: true, username: true },
   });
-  if (duplicate?.email === input.email.toLowerCase()) throw new ApiError(409, "このメールアドレスは登録済みです。");
-  if (duplicate?.username === input.username) throw new ApiError(409, "このユーザー名は既に使用されています。");
+
+  let orphanProfileId: string | undefined;
+  for (const duplicate of duplicates) {
+    const { data: authData, error: authError } = await admin.auth.admin.getUserById(duplicate.id);
+    if (authError && authError.status !== 404) {
+      throw new ApiError(503, "アカウント情報を確認できませんでした。時間をおいて再度お試しください。");
+    }
+    if (authData.user) {
+      if (duplicate.email === input.email.toLowerCase()) throw new ApiError(409, "このメールアドレスは登録済みです。");
+      if (duplicate.username === input.username) throw new ApiError(409, "このユーザー名は既に使用されています。");
+    }
+    if (orphanProfileId && orphanProfileId !== duplicate.id) {
+      throw new ApiError(409, "メールアドレスまたはユーザー名を変更してお試しください。");
+    }
+    orphanProfileId = duplicate.id;
+  }
 
   const supabase = createAnonClient(c.env);
   const { data, error } = await supabase.auth.signUp({
@@ -67,21 +82,21 @@ authRoutes.post("/register", async (c) => {
   if (error || !data.user) throw new ApiError(400, error?.message ?? "アカウントを作成できませんでした。");
 
   try {
-    const user = await prisma.user.create({
-      data: {
-        id: data.user.id,
-        email: input.email.toLowerCase(),
-        username: input.username,
-        lastName: input.lastName,
-        firstName: input.firstName,
-        role,
-        affiliation: input.affiliation || null,
-      },
-    });
+    const profileData = {
+      id: data.user.id,
+      email: input.email.toLowerCase(),
+      username: input.username,
+      lastName: input.lastName,
+      firstName: input.firstName,
+      role,
+      affiliation: input.affiliation || null,
+    };
+    const user = orphanProfileId
+      ? await prisma.user.update({ where: { id: orphanProfileId }, data: profileData })
+      : await prisma.user.create({ data: profileData });
     if (data.session) setSessionCookies(c, data.session);
     return c.json({ user, requiresEmailConfirmation: !data.session }, 201);
   } catch (error) {
-    const admin = createAdminClient(c.env);
     const cleanup = await admin.auth.admin.deleteUser(data.user.id);
     if (cleanup.error) console.error(JSON.stringify({ event: "auth_cleanup_failed", message: cleanup.error.message }));
     throw error;
