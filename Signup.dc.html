@@ -133,7 +133,7 @@ input::placeholder { color: #a5aa9f; }
           <input type="file" accept="image/*" onChange="{{ onAvatarPick }}" style="display: none;">
         </label>
         <div style="position: relative; flex-shrink: 0;">
-          <img src="{{ avatarPreview }}" alt="プロフィール画像プレビュー" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 1px solid #dcdcd4; display: block;">
+          <img src="assets/avatar-default.svg" ref="{{ avatarRef }}" alt="プロフィール画像プレビュー" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 1px solid #dcdcd4; display: block;">
           <sc-if value="{{ hasAvatar }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ clearAvatar }}" title="画像を削除" style="position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid #cfd1c8; background: #ffffff; cursor: pointer; font-size: 12px; line-height: 1; color: #3a3f39; display: flex; align-items: center; justify-content: center;">×</button>
           </sc-if>
@@ -292,7 +292,9 @@ class Component extends DCLogic {
       setAffiliation: e => this.setState({ affiliation: e.target.value }),
       affiliations: ['1年', '2年', '3年', '4年', '5年', '教員・スタッフ', '卒業生', 'その他'],
 
-      avatarPreview: s.avatar || 'assets/avatar-default.svg',
+      avatarRef: el => {
+        if (el) el.src = s.avatar || 'assets/avatar-default.svg';
+      },
       hasAvatar: !!s.avatar,
       onAvatarPick: e => {
         const file = e.target.files && e.target.files[0];
