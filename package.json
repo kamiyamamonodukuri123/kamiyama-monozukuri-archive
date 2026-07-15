@@ -3,9 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "build:assets": "node scripts/build-assets.mjs",
     "build": "npm run generate && npm run build:assets",
+    "build:vercel": "npm run build:assets",
     "dev": "npm run build && tsx src/server.ts",
     "deploy": "npx vercel --prod",
     "generate": "prisma generate",
