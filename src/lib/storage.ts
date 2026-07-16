@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApiError } from "./app.js";
 
 const DATA_URL = /^data:(image\/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/=]+)$/;
+const verifiedBuckets = new Set<string>();
 
 export type StoredImage = { imageUrl: string; storagePath: string };
 
@@ -15,6 +16,33 @@ function decodeImage(dataUrl: string): { bytes: Uint8Array; contentType: string;
   return { bytes, contentType: match[1], extension };
 }
 
+async function ensurePublicBucket(supabase: SupabaseClient, bucket: string): Promise<void> {
+  if (verifiedBuckets.has(bucket)) return;
+
+  const { data, error } = await supabase.storage.getBucket(bucket);
+  if (data) {
+    if (!data.public) throw new ApiError(500, `Storage bucket「${bucket}」をPublicに設定してください。`);
+    verifiedBuckets.add(bucket);
+    return;
+  }
+
+  const missing = error.status === 404
+    || error.statusCode === "404"
+    || error.statusCode === "NoSuchBucket"
+    || /bucket not found/i.test(error.message);
+  if (!missing) throw new ApiError(500, `Storage bucketの確認に失敗しました: ${error.message}`);
+
+  const { error: createError } = await supabase.storage.createBucket(bucket, {
+    public: true,
+    fileSizeLimit: 5 * 1024 * 1024,
+    allowedMimeTypes: ["image/png", "image/jpeg", "image/webp", "image/gif"],
+  });
+  if (createError && createError.status !== 409) {
+    throw new ApiError(500, `Storage bucketの作成に失敗しました: ${createError.message}`);
+  }
+  verifiedBuckets.add(bucket);
+}
+
 export async function uploadImage(
   supabase: SupabaseClient,
   bucket: string,
@@ -22,6 +50,7 @@ export async function uploadImage(
   ownerId: string,
   dataUrl: string,
 ): Promise<StoredImage> {
+  await ensurePublicBucket(supabase, bucket);
   const image = decodeImage(dataUrl);
   const storagePath = `${folder}/${ownerId}/${crypto.randomUUID()}.${image.extension}`;
   const { error } = await supabase.storage.from(bucket).upload(storagePath, image.bytes, {

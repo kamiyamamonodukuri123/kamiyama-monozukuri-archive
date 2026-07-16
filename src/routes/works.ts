@@ -22,7 +22,7 @@ const workSchema = z.object({
   accessLink: z.string().trim().max(500),
   docsLink: z.string().trim().max(500),
   visibility: z.enum(["public", "school", "private"]),
-  commentSetting: z.enum(["allow", "deny"]),
+  commentSetting: z.enum(["allow", "school", "deny"]),
   tags: z.array(z.string().trim().min(1).max(40)).max(10),
   images: z.array(z.string().max(7_000_000)).max(4),
 });
@@ -95,7 +95,7 @@ function workData(input: z.infer<typeof workSchema>, status: "DRAFT" | "PUBLISHE
     accessLink: input.accessLink || null,
     docsLink: input.docsLink || null,
     visibility: visibilityMap[input.visibility] ?? "SCHOOL",
-    allowComments: input.commentSetting === "allow",
+    allowComments: input.commentSetting !== "deny",
     status,
     publishedAt: status === "PUBLISHED" ? new Date() : null,
     images: {
