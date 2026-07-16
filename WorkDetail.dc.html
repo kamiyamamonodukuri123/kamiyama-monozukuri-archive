@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<script src="./api.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<style>
+html, body { margin: 0; padding: 0; background: #fafaf7; }
+body { font-family: 'Noto Sans JP', sans-serif; color: #1f241f; }
+a { color: #1e6b3d; }
+@media (max-width: 860px) {
+  [data-mq="detail-grid"] { grid-template-columns: 1fr !important; }
+  [data-mq="detail-title"] { font-size: 26px !important; }
+}
+</style>
+</helmet>
+<dc-import name="SiteHeader" active="explore" hint-size="100%,64px"></dc-import>
+
+<main data-screen-label="作品詳細" style="max-width: 1120px; margin: 0 auto; padding: 32px 24px 80px;">
+  <a href="Explore.dc.html" style="display: inline-flex; align-items: center; gap: 7px; margin-bottom: 22px; color: #596057; font-size: 13.5px; text-decoration: none;">← 作品一覧に戻る</a>
+
+  <sc-if value="{{ loading }}" hint-placeholder-val="true">
+    <div style="background: #ffffff; border: 1px solid #e6e6df; border-radius: 14px; padding: 72px 24px; text-align: center; color: #6b7069;">作品情報を読み込んでいます…</div>
+  </sc-if>
+
+  <sc-if value="{{ hasError }}" hint-placeholder-val="false">
+    <div role="alert" style="background: #ffffff; border: 1px solid #e8b7b0; border-radius: 14px; padding: 48px 24px; text-align: center;">
+      <h1 style="font-size: 20px; margin: 0 0 12px;">作品を表示できませんでした</h1>
+      <p style="font-size: 14px; color: #a53125; margin: 0 0 22px;">{{ error }}</p>
+      <a href="Explore.dc.html" style="display: inline-block; background: #1e6b3d; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; border-radius: 8px; padding: 11px 24px;">作品一覧へ</a>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ ready }}" hint-placeholder-val="false">
+    <article>
+      <section style="background: #ffffff; border: 1px solid #e6e6df; border-radius: 14px; overflow: hidden; margin-bottom: 24px;">
+        <div style="min-height: 360px; background: #edf2e9; background-image: {{ mainImage }}; background-size: cover; background-position: center;"></div>
+        <sc-if value="{{ hasMultipleImages }}" hint-placeholder-val="false">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; padding: 10px;">
+            <sc-for list="{{ images }}" as="image" hint-placeholder-count="2">
+              <div role="img" aria-label="{{ image.alt }}" style="height: 110px; border-radius: 8px; background: #edf2e9; background-image: {{ image.background }}; background-size: cover; background-position: center;"></div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </section>
+
+      <div data-mq="detail-grid" style="display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 24px; align-items: start;">
+        <section style="background: #ffffff; border: 1px solid #e6e6df; border-radius: 14px; padding: 32px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 16px;">
+            <sc-for list="{{ tags }}" as="tag" hint-placeholder-count="2"><span style="font-size: 12px; color: #1e6b3d; background: #eef4ea; border-radius: 999px; padding: 5px 12px;">{{ tag }}</span></sc-for>
+          </div>
+          <h1 data-mq="detail-title" style="font-size: 34px; line-height: 1.45; font-weight: 900; letter-spacing: 0.02em; margin: 0 0 10px;">{{ title }}</h1>
+          <sc-if value="{{ hasCatchcopy }}" hint-placeholder-val="false"><p style="font-size: 17px; color: #596057; line-height: 1.8; margin: 0 0 26px;">{{ catchcopy }}</p></sc-if>
+
+          <div style="border-top: 1px solid #eceee8; padding-top: 26px;">
+            <h2 style="font-size: 18px; margin: 0 0 12px;">作品について</h2>
+            <p style="font-size: 14.5px; line-height: 2; color: #3d433c; white-space: pre-wrap; margin: 0;">{{ description }}</p>
+          </div>
+
+          <sc-if value="{{ hasBackground }}" hint-placeholder-val="false">
+            <div style="border-top: 1px solid #eceee8; margin-top: 26px; padding-top: 26px;">
+              <h2 style="font-size: 18px; margin: 0 0 12px;">制作背景・きっかけ</h2>
+              <p style="font-size: 14.5px; line-height: 2; color: #3d433c; white-space: pre-wrap; margin: 0;">{{ background }}</p>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ hasTech }}" hint-placeholder-val="false">
+            <div style="border-top: 1px solid #eceee8; margin-top: 26px; padding-top: 26px;">
+              <h2 style="font-size: 18px; margin: 0 0 12px;">使用した技術・素材</h2>
+              <p style="font-size: 14.5px; line-height: 2; color: #3d433c; white-space: pre-wrap; margin: 0;">{{ tech }}</p>
+            </div>
+          </sc-if>
+        </section>
+
+        <aside style="background: #ffffff; border: 1px solid #e6e6df; border-radius: 14px; padding: 24px;">
+          <h2 style="font-size: 15px; margin: 0 0 18px;">作品情報</h2>
+          <dl style="display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 13px 10px; margin: 0; font-size: 13px; line-height: 1.7;">
+            <dt style="color: #747a71;">制作者</dt><dd style="margin: 0; font-weight: 700;">{{ author }}</dd>
+            <dt style="color: #747a71;">メンバー</dt><dd style="margin: 0; white-space: pre-wrap;">{{ members }}</dd>
+            <dt style="color: #747a71;">授業・企画</dt><dd style="margin: 0;">{{ className }}</dd>
+            <sc-if value="{{ hasCategory }}" hint-placeholder-val="false"><dt style="color: #747a71;">カテゴリー</dt><dd style="margin: 0;">{{ category }}</dd></sc-if>
+            <sc-if value="{{ hasPeriod }}" hint-placeholder-val="false"><dt style="color: #747a71;">制作期間</dt><dd style="margin: 0;">{{ period }}</dd></sc-if>
+            <dt style="color: #747a71;">公開日</dt><dd style="margin: 0;">{{ publishedAt }}</dd>
+          </dl>
+
+          <sc-if value="{{ hasLinks }}" hint-placeholder-val="false">
+            <div style="border-top: 1px solid #eceee8; margin-top: 22px; padding-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+              <sc-if value="{{ hasAccessLink }}" hint-placeholder-val="false"><a href="{{ accessLink }}" target="_blank" rel="noopener noreferrer" style="text-align: center; text-decoration: none; background: #1e6b3d; color: #ffffff; font-size: 13.5px; font-weight: 700; border-radius: 8px; padding: 11px 14px;">作品を見る ↗</a></sc-if>
+              <sc-if value="{{ hasDocsLink }}" hint-placeholder-val="false"><a href="{{ docsLink }}" target="_blank" rel="noopener noreferrer" style="text-align: center; text-decoration: none; color: #1e6b3d; border: 1px solid #1e6b3d; font-size: 13.5px; font-weight: 700; border-radius: 8px; padding: 10px 14px;">関連資料を見る ↗</a></sc-if>
+            </div>
+          </sc-if>
+        </aside>
+      </div>
+    </article>
+  </sc-if>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { work: null, loading: true, error: '' };
+
+  componentDidMount() {
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) {
+      this.setState({ loading: false, error: '作品が指定されていません。' });
+      return;
+    }
+    window.kmApi.getWork(id)
+      .then(result => this.setState({ work: result.work, loading: false, error: '' }))
+      .catch(error => this.setState({ work: null, loading: false, error: error.message || '作品を読み込めませんでした。' }));
+  }
+
+  formatDate(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  safeLink(value) {
+    if (!value) return '';
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : '';
+    } catch (e) { return ''; }
+  }
+
+  renderVals() {
+    const w = this.state.work;
+    const images = w && Array.isArray(w.images) ? w.images : [];
+    const accessLink = w ? this.safeLink(w.accessLink) : '';
+    const docsLink = w ? this.safeLink(w.docsLink) : '';
+    const start = w ? this.formatDate(w.dateStart) : '';
+    const end = w ? this.formatDate(w.dateEnd) : '';
+    return {
+      loading: this.state.loading,
+      hasError: !this.state.loading && !!this.state.error,
+      error: this.state.error,
+      ready: !this.state.loading && !!w,
+      title: w ? w.title : '',
+      catchcopy: w ? (w.catchcopy || '') : '',
+      hasCatchcopy: !!(w && w.catchcopy),
+      description: w ? w.description : '',
+      background: w ? (w.background || '') : '',
+      hasBackground: !!(w && w.background),
+      tech: w ? (w.tech || '') : '',
+      hasTech: !!(w && w.tech),
+      mainImage: images[0] ? 'url("' + images[0].imageUrl + '")' : 'none',
+      hasMultipleImages: images.length > 1,
+      images: images.map((image, index) => ({ background: 'url("' + image.imageUrl + '")', alt: (w ? w.title : '作品') + 'の画像' + (index + 1) })),
+      tags: w ? (w.workTags || []).map(item => item.tag.name) : [],
+      author: w && w.author ? (w.author.lastName + ' ' + w.author.firstName) : '',
+      members: w ? w.members : '',
+      className: w ? w.className : '',
+      category: w ? (w.category || '') : '',
+      hasCategory: !!(w && w.category),
+      period: start && end ? start + ' 〜 ' + end : (start || end),
+      hasPeriod: !!(start || end),
+      publishedAt: w ? this.formatDate(w.publishedAt || w.createdAt) : '',
+      accessLink,
+      docsLink,
+      hasAccessLink: !!accessLink,
+      hasDocsLink: !!docsLink,
+      hasLinks: !!(accessLink || docsLink)
+    };
+  }
+}
+</script>
+</body>
+</html>

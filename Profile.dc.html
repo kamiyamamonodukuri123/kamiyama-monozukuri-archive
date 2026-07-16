@@ -109,6 +109,7 @@ a:hover { color: #14522d; }
       <sc-if value="{{ showWorks }}" hint-placeholder-val="{{ false }}">
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px;">
           <sc-for list="{{ works }}" as="work" hint-placeholder-count="3">
+            <a href="{{ work.href }}" aria-label="{{ work.ariaLabel }}" style="display: block; color: inherit; text-decoration: none; border-radius: 10px;" style-hover="transform: translateY(-2px); box-shadow: 0 8px 22px rgba(31,36,31,0.10);">
             <article style="border: 1px solid #e6e6df; border-radius: 10px; overflow: hidden; background: #ffffff;">
               <div style="height: 160px; background: #eef4ea; background-image: {{ work.image }}; background-size: cover; background-position: center;"></div>
               <div style="padding: 16px;">
@@ -119,6 +120,7 @@ a:hover { color: #14522d; }
                 </div>
               </div>
             </article>
+            </a>
           </sc-for>
         </div>
       </sc-if>
@@ -341,6 +343,8 @@ class Component extends DCLogic {
       showWorks: t === 0 && this.state.works.length > 0,
       showEmpty: t !== 0 || this.state.works.length === 0,
       works: this.state.works.map(work => ({
+        href: 'WorkDetail.dc.html?id=' + encodeURIComponent(work.id),
+        ariaLabel: (work.title || '作品') + 'の詳細を見る',
         title: work.title || '無題',
         description: work.catchcopy || work.description || '',
         image: work.images && work.images[0] ? 'url("' + work.images[0].imageUrl + '")' : 'none',

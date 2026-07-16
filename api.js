@@ -46,6 +46,7 @@
     updateProfile: (input) => request('/api/profile', { method: 'PATCH', body: input }),
     updateAvatar: (dataUrl) => request('/api/profile/avatar', { method: 'POST', body: { dataUrl } }),
     getWorks: (params) => request('/api/works?' + new URLSearchParams(params || {}).toString()),
+    getWork: (id) => request('/api/works/' + encodeURIComponent(id)),
     getDraft: () => request('/api/works/draft'),
     saveDraft: (input) => request('/api/works/draft', { method: 'POST', body: input }),
     publishWork: (input) => request('/api/works', { method: 'POST', body: input }),
