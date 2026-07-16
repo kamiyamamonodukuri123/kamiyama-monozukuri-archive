@@ -109,18 +109,17 @@ a:hover { color: #14522d; }
       <sc-if value="{{ showWorks }}" hint-placeholder-val="{{ false }}">
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px;">
           <sc-for list="{{ works }}" as="work" hint-placeholder-count="3">
-            <a href="{{ work.href }}" aria-label="{{ work.ariaLabel }}" style="display: block; color: inherit; text-decoration: none; border-radius: 10px;" style-hover="transform: translateY(-2px); box-shadow: 0 8px 22px rgba(31,36,31,0.10);">
             <article style="border: 1px solid #e6e6df; border-radius: 10px; overflow: hidden; background: #ffffff;">
-              <div style="height: 160px; background: #eef4ea; background-image: {{ work.image }}; background-size: cover; background-position: center;"></div>
+              <a href="{{ work.href }}" aria-label="{{ work.ariaLabel }}" style="display: block; color: inherit; text-decoration: none;"><div style="height: 160px; background: #eef4ea; background-image: {{ work.image }}; background-size: cover; background-position: center;"></div></a>
               <div style="padding: 16px;">
-                <h3 style="font-size: 16px; line-height: 1.6; margin: 0 0 8px;">{{ work.title }}</h3>
+                <a href="{{ work.href }}" style="color: inherit; text-decoration: none;"><h3 style="font-size: 16px; line-height: 1.6; margin: 0 0 8px;">{{ work.title }}</h3></a>
                 <p style="font-size: 12.5px; color: #6b7069; line-height: 1.7; margin: 0 0 12px;">{{ work.description }}</p>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                   <sc-for list="{{ work.tags }}" as="tag" hint-placeholder-count="2"><span style="font-size: 11.5px; color: #1e6b3d; background: #eef4ea; border-radius: 999px; padding: 4px 10px;">{{ tag }}</span></sc-for>
                 </div>
+                <button onClick="{{ work.toggleLike }}" aria-label="{{ work.likeLabel }}" aria-pressed="{{ work.isLiked }}" style="margin-top: 14px; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: {{ work.likeColor }}; background: {{ work.likeBg }}; border: 1px solid #1e6b3d; border-radius: 999px; padding: 7px 12px; cursor: pointer;"><span aria-hidden="true" style="font-size: 17px; line-height: 1;">{{ work.heart }}</span><span>{{ work.likeCount }}</span></button>
               </div>
             </article>
-            </a>
           </sc-for>
         </div>
       </sc-if>
@@ -254,6 +253,22 @@ class Component extends DCLogic {
     }
   };
 
+  toggleLike = async (id, currentlyLiked) => {
+    try {
+      const result = await window.kmApi.setWorkLike(id, !currentlyLiked);
+      const works = this.state.works.map(work => work.id === id
+        ? Object.assign({}, work, { isLiked: result.liked, _count: Object.assign({}, work._count, { likes: result.likeCount }) })
+        : work);
+      this.setState({
+        works,
+        stats: Object.assign({}, this.state.stats, { likeCount: works.reduce((total, work) => total + (work._count ? work._count.likes : 0), 0) }),
+        loadError: ''
+      });
+    } catch (error) {
+      this.setState({ loadError: error.message || 'いいねを更新できませんでした。' });
+    }
+  };
+
   renderVals() {
     const u = this.state.user;
     const roles = ['学生', '教員', '学校スタッフ', '卒業生', 'その他の学校関係者'];
@@ -348,7 +363,14 @@ class Component extends DCLogic {
         title: work.title || '無題',
         description: work.catchcopy || work.description || '',
         image: work.images && work.images[0] ? 'url("' + work.images[0].imageUrl + '")' : 'none',
-        tags: (work.workTags || []).slice(0, 4).map(item => item.tag.name)
+        tags: (work.workTags || []).slice(0, 4).map(item => item.tag.name),
+        isLiked: !!work.isLiked,
+        heart: work.isLiked ? '♥' : '♡',
+        likeCount: work._count ? work._count.likes : 0,
+        likeLabel: work.isLiked ? 'いいねを取り消す' : 'いいねする',
+        likeColor: work.isLiked ? '#ffffff' : '#1e6b3d',
+        likeBg: work.isLiked ? '#1e6b3d' : '#ffffff',
+        toggleLike: () => this.toggleLike(work.id, !!work.isLiked)
       }))
     };
   }

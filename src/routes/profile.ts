@@ -34,13 +34,14 @@ profileRoutes.get("/", async (c) => {
     include: {
       images: { orderBy: { sortOrder: "asc" } },
       workTags: { include: { tag: true } },
+      likes: { where: { userId: user.id }, select: { userId: true } },
       _count: { select: { likes: true, bookmarks: true, comments: true } },
     },
     orderBy: { publishedAt: "desc" },
   });
   return c.json({
     user,
-    works,
+    works: works.map(({ likes, ...work }) => ({ ...work, isLiked: likes.length > 0 })),
     stats: {
       workCount: works.length,
       likeCount: works.reduce((total, work) => total + work._count.likes, 0),

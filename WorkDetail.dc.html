@@ -82,6 +82,7 @@ a { color: #1e6b3d; }
 
         <aside style="background: #ffffff; border: 1px solid #e6e6df; border-radius: 14px; padding: 24px;">
           <h2 style="font-size: 15px; margin: 0 0 18px;">作品情報</h2>
+          <button onClick="{{ toggleLike }}" aria-label="{{ likeLabel }}" aria-pressed="{{ isLiked }}" style="width: 100%; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; font-size: 14px; font-weight: 700; color: {{ likeColor }}; background: {{ likeBg }}; border: 1px solid #1e6b3d; border-radius: 8px; padding: 10px 14px; cursor: pointer;"><span aria-hidden="true" style="font-size: 20px; line-height: 1;">{{ heart }}</span><span>{{ likeText }}</span></button>
           <dl style="display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 13px 10px; margin: 0; font-size: 13px; line-height: 1.7;">
             <dt style="color: #747a71;">制作者</dt><dd style="margin: 0; font-weight: 700;">{{ author }}</dd>
             <dt style="color: #747a71;">メンバー</dt><dd style="margin: 0; white-space: pre-wrap;">{{ members }}</dd>
@@ -132,6 +133,18 @@ class Component extends DCLogic {
     } catch (e) { return ''; }
   }
 
+  toggleLike = async () => {
+    const w = this.state.work;
+    if (!w) return;
+    try {
+      const result = await window.kmApi.setWorkLike(w.id, !w.isLiked);
+      this.setState({ work: Object.assign({}, w, { isLiked: result.liked, _count: Object.assign({}, w._count, { likes: result.likeCount }) }), error: '' });
+    } catch (error) {
+      if (error.status === 401) { window.location.href = 'Signup.dc.html?mode=login'; return; }
+      this.setState({ error: error.message || 'いいねを更新できませんでした。' });
+    }
+  };
+
   renderVals() {
     const w = this.state.work;
     const images = w && Array.isArray(w.images) ? w.images : [];
@@ -168,7 +181,14 @@ class Component extends DCLogic {
       docsLink,
       hasAccessLink: !!accessLink,
       hasDocsLink: !!docsLink,
-      hasLinks: !!(accessLink || docsLink)
+      hasLinks: !!(accessLink || docsLink),
+      isLiked: !!(w && w.isLiked),
+      heart: w && w.isLiked ? '♥' : '♡',
+      likeText: (w && w.isLiked ? 'いいね済み ' : 'いいね ') + (w && w._count ? w._count.likes : 0),
+      likeLabel: w && w.isLiked ? 'いいねを取り消す' : 'いいねする',
+      likeColor: w && w.isLiked ? '#ffffff' : '#1e6b3d',
+      likeBg: w && w.isLiked ? '#1e6b3d' : '#ffffff',
+      toggleLike: this.toggleLike
     };
   }
 }

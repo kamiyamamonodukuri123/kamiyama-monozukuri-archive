@@ -31,7 +31,11 @@
     const response = await fetch(path, opts);
     const type = response.headers.get('content-type') || '';
     const payload = type.includes('application/json') ? await response.json() : {};
-    if (!response.ok) throw new Error(payload.error || '通信に失敗しました。');
+    if (!response.ok) {
+      const error = new Error(payload.error || '通信に失敗しました。');
+      error.status = response.status;
+      throw error;
+    }
     if (payload.user) payload.user = normalizeUser(payload.user);
     return payload;
   }
@@ -47,6 +51,7 @@
     updateAvatar: (dataUrl) => request('/api/profile/avatar', { method: 'POST', body: { dataUrl } }),
     getWorks: (params) => request('/api/works?' + new URLSearchParams(params || {}).toString()),
     getWork: (id) => request('/api/works/' + encodeURIComponent(id)),
+    setWorkLike: (id, liked) => request('/api/works/' + encodeURIComponent(id) + '/like', { method: liked ? 'POST' : 'DELETE' }),
     getDraft: () => request('/api/works/draft'),
     saveDraft: (input) => request('/api/works/draft', { method: 'POST', body: input }),
     publishWork: (input) => request('/api/works', { method: 'POST', body: input }),

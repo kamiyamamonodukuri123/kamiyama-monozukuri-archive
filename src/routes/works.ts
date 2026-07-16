@@ -116,6 +116,8 @@ workRoutes.get("/", async (c) => {
   const q = (c.req.query("q") ?? "").trim();
   const sort = c.req.query("sort") ?? "new";
   const category = c.req.query("category") ?? "";
+  const requestedLimit = Number.parseInt(c.req.query("limit") ?? "50", 10);
+  const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 50) : 50;
   const visibility: Visibility[] = user ? ["PUBLIC", "SCHOOL"] : ["PUBLIC"];
   const where: Prisma.WorkWhereInput = {
     status: "PUBLISHED",
@@ -137,10 +139,17 @@ workRoutes.get("/", async (c) => {
       ? { likes: { _count: "desc" } }
       : { publishedAt: "desc" };
   const [works, total] = await Promise.all([
-    c.get("prisma").work.findMany({ where, include: includeWork, orderBy, take: 50 }),
+    c.get("prisma").work.findMany({ where, include: includeWork, orderBy, take: limit }),
     c.get("prisma").work.count({ where }),
   ]);
-  return c.json({ works, total });
+  const liked = user && works.length
+    ? await c.get("prisma").like.findMany({
+        where: { userId: user.id, workId: { in: works.map((work) => work.id) } },
+        select: { workId: true },
+      })
+    : [];
+  const likedIds = new Set(liked.map((like) => like.workId));
+  return c.json({ works: works.map((work) => ({ ...work, isLiked: likedIds.has(work.id) })), total });
 });
 
 workRoutes.get("/draft", async (c) => {
@@ -219,5 +228,36 @@ workRoutes.get("/:id", async (c) => {
   if (!work || work.status !== "PUBLISHED") throw new ApiError(404, "作品が見つかりません。");
   if (work.visibility === "PRIVATE" && work.authorId !== user?.id) throw new ApiError(404, "作品が見つかりません。");
   if (work.visibility === "SCHOOL" && !user) throw new ApiError(401, "この作品の閲覧にはログインが必要です。");
-  return c.json({ work });
+  const isLiked = user
+    ? !!(await c.get("prisma").like.findUnique({ where: { userId_workId: { userId: user.id, workId: work.id } }, select: { userId: true } }))
+    : false;
+  return c.json({ work: { ...work, isLiked } });
+});
+
+workRoutes.post("/:id/like", async (c) => {
+  const user = await requireUser(c);
+  const id = z.string().uuid().safeParse(c.req.param("id"));
+  if (!id.success) throw new ApiError(400, "作品IDが不正です。");
+  const work = await c.get("prisma").work.findUnique({
+    where: { id: id.data },
+    select: { id: true, authorId: true, status: true, visibility: true },
+  });
+  if (!work || work.status !== "PUBLISHED") throw new ApiError(404, "作品が見つかりません。");
+  if (work.visibility === "PRIVATE" && work.authorId !== user.id) throw new ApiError(404, "作品が見つかりません。");
+  await c.get("prisma").like.upsert({
+    where: { userId_workId: { userId: user.id, workId: work.id } },
+    create: { userId: user.id, workId: work.id },
+    update: {},
+  });
+  const likeCount = await c.get("prisma").like.count({ where: { workId: work.id } });
+  return c.json({ liked: true, likeCount });
+});
+
+workRoutes.delete("/:id/like", async (c) => {
+  const user = await requireUser(c);
+  const id = z.string().uuid().safeParse(c.req.param("id"));
+  if (!id.success) throw new ApiError(400, "作品IDが不正です。");
+  await c.get("prisma").like.deleteMany({ where: { userId: user.id, workId: id.data } });
+  const likeCount = await c.get("prisma").like.count({ where: { workId: id.data } });
+  return c.json({ liked: false, likeCount });
 });
