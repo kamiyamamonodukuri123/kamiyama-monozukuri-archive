@@ -27,7 +27,26 @@ const avatarSchema = z.object({ dataUrl: z.string().max(7_000_000) });
 
 export const profileRoutes = new Hono<AppBindings>();
 
-profileRoutes.get("/", async (c) => c.json({ user: await requireUser(c) }));
+profileRoutes.get("/", async (c) => {
+  const user = await requireUser(c);
+  const works = await c.get("prisma").work.findMany({
+    where: { authorId: user.id, status: "PUBLISHED" },
+    include: {
+      images: { orderBy: { sortOrder: "asc" } },
+      workTags: { include: { tag: true } },
+      _count: { select: { likes: true, bookmarks: true, comments: true } },
+    },
+    orderBy: { publishedAt: "desc" },
+  });
+  return c.json({
+    user,
+    works,
+    stats: {
+      workCount: works.length,
+      likeCount: works.reduce((total, work) => total + work._count.likes, 0),
+    },
+  });
+});
 
 profileRoutes.patch("/", async (c) => {
   const user = await requireUser(c);

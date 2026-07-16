@@ -54,7 +54,7 @@ a:hover { color: #14522d; }
   <section data-mq="profile-head" style="display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 40px; align-items: start; margin-bottom: 8px;">
     <div style="display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap;">
       <div style="position: relative; flex-shrink: 0;">
-        <img src="{{ avatarSrc }}" alt="プロフィール画像" style="width: 148px; height: 148px; border-radius: 50%; object-fit: cover; border: 1px solid #e6e6df; display: block;">
+        <img src="assets/avatar-default.svg" ref="{{ avatarRef }}" alt="プロフィール画像" style="width: 148px; height: 148px; border-radius: 50%; object-fit: cover; border: 1px solid #e6e6df; display: block;">
         <label title="プロフィール画像を変更" style="position: absolute; right: 4px; bottom: 4px; width: 38px; height: 38px; border-radius: 50%; background: #3a3f39; display: flex; align-items: center; justify-content: center; cursor: pointer;">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8 h3 l2-2.5 h6 L17 8 h3 a1 1 0 0 1 1 1 v10 a1 1 0 0 1-1 1 H4 a1 1 0 0 1-1-1 V9 a1 1 0 0 1 1-1 Z"></path><circle cx="12" cy="13.5" r="3.4"></circle></svg>
           <input type="file" accept="image/*" onChange="{{ onAvatarPick }}" style="display: none;">
@@ -89,8 +89,8 @@ a:hover { color: #14522d; }
       <div data-mq="stats" style="display: flex; justify-content: space-between; gap: 12px; padding: 4px 6px;">
         <div style="text-align: center;"><p style="font-size: 12.5px; color: #6b7069; margin: 0 0 6px;">フォロー中</p><p style="font-size: 24px; font-weight: 900; margin: 0;">0</p></div>
         <div style="text-align: center;"><p style="font-size: 12.5px; color: #6b7069; margin: 0 0 6px;">フォロワー</p><p style="font-size: 24px; font-weight: 900; margin: 0;">0</p></div>
-        <div style="text-align: center;"><p style="font-size: 12.5px; color: #6b7069; margin: 0 0 6px;">投稿作品</p><p style="font-size: 24px; font-weight: 900; margin: 0;">0</p></div>
-        <div style="text-align: center;"><p style="font-size: 12.5px; color: #6b7069; margin: 0 0 6px;">獲得いいね</p><p style="font-size: 24px; font-weight: 900; margin: 0;">0</p></div>
+        <div style="text-align: center;"><p style="font-size: 12.5px; color: #6b7069; margin: 0 0 6px;">投稿作品</p><p style="font-size: 24px; font-weight: 900; margin: 0;">{{ postCount }}</p></div>
+        <div style="text-align: center;"><p style="font-size: 12.5px; color: #6b7069; margin: 0 0 6px;">獲得いいね</p><p style="font-size: 24px; font-weight: 900; margin: 0;">{{ likeCount }}</p></div>
       </div>
       <button onClick="{{ logout }}" style="font-family: inherit; font-size: 13px; font-weight: 500; color: #6b7069; background: none; border: none; cursor: pointer; text-decoration: underline; align-self: flex-end;">ログアウト</button>
     </div>
@@ -106,6 +106,23 @@ a:hover { color: #14522d; }
 
     <section style="background: #ffffff; border: 1px solid #e6e6df; border-radius: 12px; padding: 24px;">
       <h2 style="font-size: 16px; font-weight: 700; margin: 0 0 20px;">{{ activeTabLabel }}</h2>
+      <sc-if value="{{ showWorks }}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px;">
+          <sc-for list="{{ works }}" as="work" hint-placeholder-count="3">
+            <article style="border: 1px solid #e6e6df; border-radius: 10px; overflow: hidden; background: #ffffff;">
+              <div style="height: 160px; background: #eef4ea; background-image: {{ work.image }}; background-size: cover; background-position: center;"></div>
+              <div style="padding: 16px;">
+                <h3 style="font-size: 16px; line-height: 1.6; margin: 0 0 8px;">{{ work.title }}</h3>
+                <p style="font-size: 12.5px; color: #6b7069; line-height: 1.7; margin: 0 0 12px;">{{ work.description }}</p>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <sc-for list="{{ work.tags }}" as="tag" hint-placeholder-count="2"><span style="font-size: 11.5px; color: #1e6b3d; background: #eef4ea; border-radius: 999px; padding: 4px 10px;">{{ tag }}</span></sc-for>
+                </div>
+              </div>
+            </article>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ true }}">
       <div style="border: 1.5px dashed #d5d8cd; border-radius: 10px; padding: 56px 24px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;">
         <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#a9c79a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="15" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M3 17 L9 12 L14 16 L17 13 L21 17"></path></svg>
         <p style="margin: 0; font-size: 15px; font-weight: 700; color: #3a3f39;">{{ emptyTitle }}</p>
@@ -114,6 +131,7 @@ a:hover { color: #14522d; }
           <a href="PostWork.dc.html" style="margin-top: 6px; text-decoration: none; background: #1e6b3d; color: #ffffff; font-size: 14px; font-weight: 700; padding: 10px 26px; border-radius: 8px;" style-hover="background: #17552f;">作品を投稿する</a>
         </sc-if>
       </div>
+      </sc-if>
     </section>
 
     <aside style="background: #f4f4ef; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 28px;">
@@ -201,13 +219,20 @@ class Component extends DCLogic {
     activeTab: 0,
     editOpen: false,
     editLastName: '', editFirstName: '', editRole: '学生', editAffiliation: '',
-    editBio: '', editSkills: '', editError: '', saveSuccess: false
+    editBio: '', editSkills: '', editError: '', saveSuccess: false,
+    works: [], stats: { workCount: 0, likeCount: 0 }, loadError: ''
   };
 
   componentDidMount() {
-    window.kmApi.session()
-      .then(result => this.setState({ user: result.user, authReady: true }))
-      .catch(() => this.setState({ user: null, authReady: true }));
+    window.kmApi.getProfile()
+      .then(result => this.setState({
+        user: result.user,
+        works: result.works || [],
+        stats: result.stats || { workCount: 0, likeCount: 0 },
+        loadError: '',
+        authReady: true
+      }))
+      .catch(() => this.setState({ user: null, works: [], authReady: true }));
   }
 
   saveProfile = async () => {
@@ -254,7 +279,11 @@ class Component extends DCLogic {
       skills,
       hasSkills: skills.length > 0,
       hasNoSkills: skills.length === 0,
-      avatarSrc: (u && u.avatar) ? u.avatar : 'assets/avatar-default.svg',
+      avatarRef: el => {
+        if (el) el.src = (u && u.avatar) ? u.avatar : 'assets/avatar-default.svg';
+      },
+      postCount: this.state.stats.workCount || 0,
+      likeCount: this.state.stats.likeCount || 0,
       saveSuccess: this.state.saveSuccess,
       openEdit: () => this.setState({
         editOpen: true,
@@ -308,7 +337,15 @@ class Component extends DCLogic {
       activeTabLabel: tabLabels[t],
       emptyTitle: empties[t][0],
       emptyBody: empties[t][1],
-      showPostCta: t === 0
+      showPostCta: t === 0,
+      showWorks: t === 0 && this.state.works.length > 0,
+      showEmpty: t !== 0 || this.state.works.length === 0,
+      works: this.state.works.map(work => ({
+        title: work.title || '無題',
+        description: work.catchcopy || work.description || '',
+        image: work.images && work.images[0] ? 'url("' + work.images[0].imageUrl + '")' : 'none',
+        tags: (work.workTags || []).slice(0, 4).map(item => item.tag.name)
+      }))
     };
   }
 }

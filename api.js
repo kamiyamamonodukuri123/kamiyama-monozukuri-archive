@@ -42,6 +42,7 @@
     register: (input) => request('/api/auth/register', { method: 'POST', body: input }),
     login: (email, password) => request('/api/auth/login', { method: 'POST', body: { email, password } }),
     logout: () => request('/api/auth/logout', { method: 'POST' }),
+    getProfile: () => request('/api/profile'),
     updateProfile: (input) => request('/api/profile', { method: 'PATCH', body: input }),
     updateAvatar: (dataUrl) => request('/api/profile/avatar', { method: 'POST', body: { dataUrl } }),
     getWorks: (params) => request('/api/works?' + new URLSearchParams(params || {}).toString()),
